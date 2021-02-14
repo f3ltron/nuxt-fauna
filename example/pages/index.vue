@@ -1,28 +1,41 @@
 <template>
   <div class="container">
-    <!-- <div>
+    <div>
+      <h1>CUSTOMERS</h1>
       <div v-for="(customer, i) in customers.data" :key="i + customer.ts">
         <Customer :customer="customer" @update="update" />
       </div>
-    </div> -->
+    </div>
+    <div>
+      <h1>STOREHOUSES</h1>
+      <div v-for="(storehouse, i) in storehouses.data" :key="i + storehouse.ts">
+        <Storehouse :storehouse="storehouse" @update="update" />
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 export default {
   async asyncData(ctx) {
-    // const ret = await ctx.$axios.get('http://localhost:3000/api')
-    // console.log(ret)
-    // return ctx.$fauna.client('default').pullData(['storehouses', 'customers'])
+    const data = await ctx.$fauna.pullData(['storehouses', 'customers'])
+    return data
   },
-  mounted() {
-    this.$axios.post('http://localhost:3000/fauna/get-collections')
-  },
+  data: () => ({
+    customers: {
+      data: [],
+    },
+    storehouses: {
+      data: [],
+    },
+  }),
   methods: {
-    update(data) {
-      // console.log(this.$fauna)
-      // console.log(this.fauna)
-      // console.log('je suis la', data)
+    async update(data) {
+      try {
+        await this.$fauna.pushData(data)
+      } catch (e) {
+        console.log(e)
+      }
     },
   },
 }

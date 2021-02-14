@@ -2,3 +2,4 @@
 - be abtle to instanciate more fauna db with different rights
 - add fauna property inside page component
 - simplify data return object
+- adding typescript support

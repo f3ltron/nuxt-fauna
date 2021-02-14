@@ -26,10 +26,13 @@ export default {
   },
   methods: {
     updateCustomer() {
-      console.log(this.$emit)
       this.$emit('update', {
-        lastName: this.lastName,
-        firstName: this.firstName,
+        data: {
+          lastName: this.lastName,
+          firstName: this.firstName,
+        },
+        collection: 'customers',
+        id: this.customer.ref['@ref'].id,
       })
     },
   },
