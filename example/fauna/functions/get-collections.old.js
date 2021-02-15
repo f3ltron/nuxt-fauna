@@ -1,6 +1,5 @@
-exports.handler = async (event, context) => {
-  return {
-    statusCode: 200,
-    body: JSON.stringify('bonjour 2'),
-  }
+module.exports = (req, res) => {
+  res.json({
+    message: 'bonjour',
+  })
 }
