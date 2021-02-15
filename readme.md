@@ -1,20 +1,18 @@
 # Nuxt Faunadb
 
-Thanks for trying nuxt fauna module! Nuxt fauna is a simple way to use fauna inside your nuxt application.
+Thanks for trying nuxt fauna module! `nuxt-fauna` is a simple way to use fauna inside your nuxt application. It's important to notice that it use [fauna FQL](https://docs.fauna.com/fauna/current/api/fql/) behind the scene the native langage for fauna.
 
 # Links
 
 - [Preview](https://nuxt-fauna.herokuapp.com/)
 - [Example](/example)
 - [Fauna](https://fauna.com/)
-- [Nuxt Server middleware](https://nuxtjs.org/docs/2.x/configuration-glossary/configuration-servermiddleware)
 - [Nuxt plugins](https://nuxtjs.org/docs/2.x/directory-structure/plugins)
+- [Fauna FQL](https://docs.fauna.com/fauna/current/api/fql/)
 
 # Features
 
-- Read documents from a collection
-- Update a document from a collection
-- Override those functions to create your own
+- CRUD (create, read, update, delete) operations into collection
 
 # Getting started
 
@@ -29,125 +27,181 @@ It's as simple as:
 ```js
 modules: ['nuxt-fauna'],
 fauna: {
+  default: {
     secret: process.env.FAUNA_KEY,
+  }
+  // you can add more fauna client
+  /**
+   * other: {
+   *  secret: secretKey
+   * }
+   * /
 }
 ```
 - Run `yarn dev`
 
 And voila!
 
-# Implementation
+**IMPORTANT**: 
 
-Before we go into detail about how to use the module. I am assuming you are using faunaDB with nuxtSSR. What does it mean? That means you will be able to hide the faunaDB secret key as you need more than just to read data.
+It will be a direct connexion to your faunadb so make sure to create a secret key that has only read/write on your collections and not as admin.
 
-We will use [Nuxt server middleware](https://nuxtjs.org/docs/2.x/configuration-glossary/configuration-servermiddleware) to call faundaDB.
+Go to your faunadb account > Security > Roles > New Role
 
-After that we will use nuxt plugin to simplify the call to the faundDB.
+![Capture](https://user-images.githubusercontent.com/11556276/108035702-403fc300-7005-11eb-9267-5a9771478f24.PNG)
 
-All fauna configurations should be present in the `fauna` folder at the root of your project.
+After that create a new key with this role.
 
-## Nuxt Server Middleware
+![Capture2](https://user-images.githubusercontent.com/11556276/108035899-87c64f00-7005-11eb-8d38-e8b4402d2b92.PNG)
 
-To create our endpoints we are defining a list of handlers / functions that you will be able to use. They are basically express handler.
+# Usage
 
-**Optional**:
-
-You can override the default handlers. If you want to override them you will have to create there mirror files inside `fauna/functions` folder.
-
-Here are the list of files you can override:
-
-- get-collections.js
-- update-collections.js
-
-Here an example of what it should looks like
+We are injecting `$fauna` into your application. You need to have define at least a default faunaDB configuration in your `nuxt.config.js`
 
 ```js
-module.exports = async (req, res) => {
-  res.json({
-    message: 'bonjour',
-  })
-}
-```
-
-## Nuxt plugins
-
-We are injecting `$fauna` into your application. 
-
-You will have access to `pullData` and `pushData` everywhere in your application server side or client side.
-
-### pullData
-
-Pull data will need an array of collections where it will get data.
-
-You will receive an object with each of the keys you asked for.
-
-data return object will like.
-
-```js
-{
-  'key1': {
-    data: [datas]
+fauna: {
+  default: {
+    secret: process.env.FAUNA_KEY,
   },
-  'key2': {
-    data: [datas]
-  }
+  other: {
+      secret: process.env.FAUNA_KEY_OTHER,
+  },
 }
 ```
 
-Example:
+To access to a faunaDB instance you can access it like:
 
 ```js
 export default {
   async asyncData(ctx) {
-    const data = await ctx.$fauna.pullData(['storehouses', 'customers'])
-    return data
+    await ctx.$fauna.client().read()
   },
-}
-```
-
-### pushData
-
-Push data is a method to update a document in your faunaDB from a collection.
-
-```js
-export default {
   methods: {
-    async update(data) {
-        try {
-          await this.$fauna.pushData(data)
-        } catch (e) {
-        // ...
-        }
-    },
+    async update() {
+      await this.$fauna.client('other').update()
+    }
   }
 }
 ```
 
-data should build like this.
+As you see here If you are using `client()` without parameter, it will use the default configuration.
+
+For each instances you will have access to
+- [read](#Read)
+- [readCollections](#ReadCollections)
+- [create](#Create)
+- [update](#Update)
+- [delete](#Delete)
+
+# Read
+
+You will read a specific id.
+
+```js
+this.$fauna.client().read({collection: 'collectionName', id: 'refId'})
+```
+
+# ReadCollections
+
+You will be able to call multiple collections.
+
+```js
+this.$fauna.client().readCollections({ collections: [
+  'collectionName1',
+  'collectionName2'
+]})
+```
+
+The return object will looks like:
 
 ```js
 {
-    collection: 'name of your collection',
-    id: 'the ref id you want to update',
-    data: {} // the data can be any of your document type. You can just send what 
-    // key data you want to update it doesnt has to be the full object. Faunadb is smart enough to update even nested objects
+  collectionName1: {
+    data: []
+  }
+  collectionName2: {
+    data: []
+  }
 }
+```
+
+# Create
+
+Make sure to respect this format when calling create.
+
+```js
+this.$fauna.client().create({
+  collection: 'todos',
+  data: {
+    name: this.name,
+    description: this.description,
+    done: false,
+  },
+})
+```
+
+The document created will be return.
+
+# Update
+
+FQL langage is using partial update so you just need to pass property who had changed.
+
+```js
+this.$fauna.client().update({
+  collection: 'todos',
+  id,
+  data: {
+    done,
+  },
+})
+```
+
+# Delete
+
+You can delete by passing the collection and the id.
+
+```js
+this.$fauna
+  .client()
+  .delete({ collection: 'todos', id })
 ```
 
 # Contribute
 
 Ok so now you know how to use it. Do you want to contribute ? Make sure to check the [roadmap](#roadmap) first.
 
-Check [Getting started](#getting-started) to know what you will have to configure.
+Check [Getting started](#getting-started) and [Development](#Development)  to know what you will have to configure.
 
 Create a pull request. We will be really happy to see your contribution.
 
+# Development
+
+After you clone the project check lib folder.
+
+## index.js
+
+Here will be the module instanciation. It will validate your module configuration and add plugin.
+
+## plugin.js
+
+Plugin will inject `$fauna` into your application
+
+## fauna.js
+
+In this file you will find the current fauna client and how CRUD is implemented.
+
+## functions.js
+
+Here you will find every functions that are dispatch into your clients.
+
+## validators.js
+
+In this file you will find every validator that will be executed for each functions.
+
 # Roadmap
 
-We will create a github project so you can easily see what we are working on. But for now there is a list of elements that can improve the module:
-
 - Adding Typescript support.
-- Allow the possibility to create custom handlers that are not present in the list.
-- Ability to call multiple faunaDB.
-- Create a wrapper for netlify so you will be able to use it in SSG (static site generation) applications.
+- Allow the possibility to create custom validators.
+- Override / Complete the default functions
 - FaunaDB gives you the ability to send your schema type so during the application build it would be able to call import endpoint to update the schema already in place
+- Implement graphql interface even if fauna matainer prefer to use the native FQL langage

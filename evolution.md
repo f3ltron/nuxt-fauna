@@ -1,33 +1,36 @@
 developer experience:
 
 - clarity
-    documentation is progressive
+    Documentation is progressive. You can start fast, check the example folder or read more about the documentation
+- consistency
+    Parameters pass to functions has the same data structure.
 - simplicity
     the plugin make it super easy to use with this high level of abstraction.
 - modularity
-    you can override default functions with simplicity
+    in the nuxtServerMiddleware version you can override default functions
 - easy development setup
     one secret propety to define
     logs that help you during all the process
 - evolution
-    adding typescript support
-    Let the possibility to create custom handler that are not present in the list.
-    be able to call multiple faunaDB
-    Create wrapper for netlify so you will be able to use it in SSG (static site generation) application.
-    faunaDB let you the possibility to send him your schema type so when application building it would be able to call import endpoint to update shema alreay in place
+    check roadmap
 - contributing
     explain how to contribute and where to start with setup and roadmap
 
-
 History:
 
-- Starting by implementing all logic in front but fauna depend on your needs to have your key hidden. (write rights)
-=> decided to make it oriented with server side rendering only
+Question: What is Fauna
+Discussion: Discussion on slack channel and read documentation and articles
+Solution: Fauna support graphql, FQL langage. Learn enough to be able to use CRUD. Not choosing Graphql to not spend so much time but create
+enought abstraction to implement it later.
 
-- Added at the begining a "instance like" so you can call multiple faunaDb client.
-Was like nuxt image defining like provider.
-=> move to one faunda db to start.
+Question: Possibility to create multiple instance of faune db
+Discussion: Added at the begining a "instance like" so you can call multiple faunaDb client
+Solution: Create a wrapper class that expose client and addClient based on the nuxt.config.js
 
-- made it enough modular to wrap for netlify function and SSG context.
-=> creating fauna/functions. Easy to create a wrapper around so you can expose a netlify example
+Question: Want to support netlify functions
+Discussion: Make it enough modular to wrap for netlify function and SSG context.
+Solution: Easy to create a wrapper around so you can expose for netlify functions
 
+Question: Question about CRUD and the security key
+Discussion: Discussion in faun slack channel with community about it.
+Solution: Come back to only plugin without server middleware. And add multiple instance possibility for fauna db
